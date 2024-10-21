@@ -16,6 +16,7 @@ load_dotenv()
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
 
+print(AZURE_OPENAI_ENDPOINT)
 
 
 UPLOAD_DIR = "uploaded_files"
@@ -28,7 +29,7 @@ class ThreadViewSet(viewsets.ModelViewSet):
     serializer_class = ThreadSerializer
 
     def create(self, request, *args, **kwargs):
-        user_id = request.data.get('user_id')  # Changed to user_id
+        doctor_id = request.data.get('doctor_id')  # Changed to doctor_id
         doctor_name = request.data.get('doctor_name')
         content = request.data.get('content')
         uploaded_files = request.FILES.getlist('files')
@@ -45,7 +46,7 @@ class ThreadViewSet(viewsets.ModelViewSet):
 
         new_thread = Thread(
             doctor_name=doctor_name,
-            user_id=user_id,
+            doctor_id=doctor_id,
             content=content,
             uploaded_files=uploaded_file_names
         )
@@ -115,11 +116,15 @@ class ThreadViewSet(viewsets.ModelViewSet):
         uploaded_files = request.FILES.getlist('files')
         combined_text = ""
 
+        # Process the uploaded files and save them
         for uploaded_file in uploaded_files:
             file_location = os.path.join(UPLOAD_DIR, uploaded_file.name)
             with open(file_location, 'wb+') as destination:
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
+
+            # Append the new file to the existing uploaded_files
+            thread.uploaded_files.append(file_location)
 
             # Optionally extract text from the new uploaded files
             if file_location.lower().endswith('.pdf'):
@@ -134,6 +139,9 @@ class ThreadViewSet(viewsets.ModelViewSet):
         response = self.query_pdf_content_in_chunks(thread.content, query_text)
 
         return Response({"query": query_text, "answer": response}, status=status.HTTP_200_OK)
+
+
+
 
     def extract_text_from_pdf(self, file_path):
         pdf_text = ""
