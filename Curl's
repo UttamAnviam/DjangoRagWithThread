@@ -2,12 +2,12 @@
 curl -X POST http://localhost:8000/threads/ \
 -H "Content-Type: application/json" \
 -d '{
-    "user_id": "user_123",
     "doctor_name": "Dr. Smith",
+    "doctor_id": "doctor_456",
     "content": "Initial consultation notes.",
-    "files": [
-        @"/path/to/uploaded/file1.pdf",
-        @"/path/to/uploaded/file2.txt"
+    "uploaded_files": [
+        "/path/to/uploaded/file1.pdf",
+        "/path/to/uploaded/file2.txt"
     ]
 }'
 
